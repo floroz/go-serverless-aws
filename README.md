@@ -1,3 +1,16 @@
+# Get dependencies
+
+```sh
+$ go get
+```
+
+# Bootstrap for Lambda Deployment
+
+```sh
+$ cd lambda
+$ make build
+```
+
 # Welcome to your CDK Go project!
 
 This is a blank project for CDK development with Go.
