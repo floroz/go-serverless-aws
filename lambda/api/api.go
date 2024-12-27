@@ -3,15 +3,11 @@ package api
 import (
 	"fmt"
 	"lambda-func/database"
-	"lambda-func/types"
+	"log"
 )
 
 type ApiClient struct {
-	dbStore *database.DBClient
-}
-
-func (c *ApiClient) CreateUser(usrname, password string) error {
-	return nil
+	userStore database.UserStore
 }
 
 // Pointer to singleton instance
@@ -21,20 +17,23 @@ func GetApiClient() *ApiClient {
 	if apiClient == nil {
 		db := database.GetDBClient()
 		apiClient = &ApiClient{
-			dbStore: db,
+			userStore: db,
 		}
 	}
 
 	return apiClient
 }
 
-func (a *ApiClient) RegisterUserHandler(usr types.RegisterUser) error {
+func (a *ApiClient) CreateUser(usr, pwd string) error {
 
-	err := a.dbStore.CreateUser(usr.Username, usr.Password)
+	err := a.userStore.CreateUser(usr, pwd)
 
 	if err != nil {
+		log.Printf("Failed to create user.\n")
 		return fmt.Errorf("error while creating the user, error: %w", err)
 	}
+
+	log.Printf("User %s created\n", usr)
 
 	return nil
 

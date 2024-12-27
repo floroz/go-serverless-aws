@@ -4,9 +4,7 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 
-	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
@@ -26,9 +24,9 @@ func NewGoAwsCdkStack(scope constructs.Construct, id string, props *GoAwsCdkStac
 	userTable := awsdynamodb.NewTable(stack, jsii.String("user_table"), &awsdynamodb.TableProps{
 		PartitionKey: &awsdynamodb.Attribute{
 			Name: jsii.String("username"),
-			Type: dynamodb.AttributeType_STRING,
+			Type: awsdynamodb.AttributeType_STRING,
 		},
-		Stream: dynamodb.StreamViewType_NEW_IMAGE,
+		Stream: awsdynamodb.StreamViewType_NEW_IMAGE,
 	})
 
 	// lambda resource

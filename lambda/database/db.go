@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -9,6 +10,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type UserStore interface {
+	DoesUserExist(usr string) (bool, error)
+	CreateUser(usr, pwd string) error
+}
 
 type DBClient struct {
 	dynamoDB *dynamodb.DynamoDB
@@ -54,6 +60,7 @@ func (u *DBClient) DoesUserExist(username string) (bool, error) {
 
 	// err retrieving
 	if err != nil {
+		log.Printf("error from retrieving the existing user \n, %v", err)
 		return false, err
 	}
 
@@ -114,6 +121,7 @@ func (dbClient *DBClient) CreateUser(username, password string) error {
 
 	// err creating
 	if err != nil {
+		log.Printf("error from creating a new user, \n %v", err)
 		return err
 	}
 

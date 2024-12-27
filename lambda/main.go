@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"lambda-func/api"
 	"log"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -9,6 +10,7 @@ import (
 
 type LambdaEvent struct {
 	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func HandleRequest(event LambdaEvent) error {
@@ -16,7 +18,9 @@ func HandleRequest(event LambdaEvent) error {
 		log.Println("Username empty", event)
 		return fmt.Errorf("username cannot be empty")
 	}
-	return nil
+	apiClient := api.GetApiClient()
+
+	return apiClient.CreateUser(event.Username, event.Password)
 }
 
 func main() {
