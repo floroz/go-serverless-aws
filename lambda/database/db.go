@@ -15,7 +15,7 @@ type DBClient struct {
 }
 
 const (
-	tableName      = "user_table"
+	TableName      = "user_table"
 	minPasswordLen = 4
 	minUsernameLen = 3
 )
@@ -44,7 +44,7 @@ func (u *DBClient) DoesUserExist(username string) (bool, error) {
 	}
 
 	result, err := u.dynamoDB.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(TableName),
 		Key: map[string]*dynamodb.AttributeValue{
 			username: {
 				S: aws.String(username),
@@ -99,7 +99,7 @@ func (dbClient *DBClient) CreateUser(username, password string) error {
 
 	// create item
 	item := &dynamodb.PutItemInput{
-		TableName: aws.String(tableName),
+		TableName: aws.String(TableName),
 		Item: map[string]*dynamodb.AttributeValue{
 			"username": {
 				S: aws.String(username),

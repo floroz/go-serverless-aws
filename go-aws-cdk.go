@@ -23,7 +23,7 @@ func NewGoAwsCdkStack(scope constructs.Construct, id string, props *GoAwsCdkStac
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
 	// create DB table
-	awsdynamodb.NewTable(stack, jsii.String("myUserTable"), &awsdynamodb.TableProps{
+	awsdynamodb.NewTable(stack, jsii.String("user_table"), &awsdynamodb.TableProps{
 		PartitionKey: &awsdynamodb.Attribute{
 			Name: jsii.String("username"),
 			Type: dynamodb.AttributeType_STRING,
