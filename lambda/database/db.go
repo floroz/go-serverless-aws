@@ -15,7 +15,9 @@ type DBClient struct {
 }
 
 const (
-	tableName = "user_table"
+	tableName      = "user_table"
+	minPasswordLen = 4
+	minUsernameLen = 3
 )
 
 // Pointer to singleton instance
@@ -73,11 +75,11 @@ func (dbClient *DBClient) CreateUser(username, password string) error {
 	trimmedUsername, trimmedPassword := strings.TrimSpace(username), strings.TrimSpace(password)
 
 	// validate inputs
-	if trimmedUsername == "" || len(trimmedUsername) < 3 {
+	if trimmedUsername == "" || len(trimmedUsername) < minUsernameLen {
 		return fmt.Errorf("invalid username, at least 3 char long")
 	}
 
-	if trimmedPassword == "" || len(trimmedPassword) < 4 {
+	if trimmedPassword == "" || len(trimmedPassword) < minPasswordLen {
 		return fmt.Errorf("invalid password, at least 4 char long")
 	}
 
