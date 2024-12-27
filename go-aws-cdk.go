@@ -22,8 +22,8 @@ func NewGoAwsCdkStack(scope constructs.Construct, id string, props *GoAwsCdkStac
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
-	// create DB table
-	awsdynamodb.NewTable(stack, jsii.String("user_table"), &awsdynamodb.TableProps{
+	// create DB userTable
+	userTable := awsdynamodb.NewTable(stack, jsii.String("user_table"), &awsdynamodb.TableProps{
 		PartitionKey: &awsdynamodb.Attribute{
 			Name: jsii.String("username"),
 			Type: dynamodb.AttributeType_STRING,
@@ -32,11 +32,14 @@ func NewGoAwsCdkStack(scope constructs.Construct, id string, props *GoAwsCdkStac
 	})
 
 	// lambda resource
-	awslambda.NewFunction(stack, jsii.String("myLambdaFunction"), &awslambda.FunctionProps{
+	lambdaFunc := awslambda.NewFunction(stack, jsii.String("myLambdaFunction"), &awslambda.FunctionProps{
 		Runtime: awslambda.Runtime_PROVIDED_AL2023(),
 		Code:    awslambda.AssetCode_FromAsset(jsii.String("./lambda/function.zip"), nil),
 		Handler: jsii.String("main"),
 	})
+
+	// allow lambda to r/w to dynamodb table
+	userTable.GrantReadWriteData(lambdaFunc)
 
 	return stack
 }
