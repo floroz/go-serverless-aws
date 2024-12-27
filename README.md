@@ -11,9 +11,9 @@ $ cd lambda
 $ make build
 ```
 
-# Welcome to your CDK Go project!
+# AWS CDK
 
-This is a blank project for CDK development with Go.
+This project uses AWS CDK development with Go.
 
 The `cdk.json` file tells the CDK toolkit how to execute your app.
 
