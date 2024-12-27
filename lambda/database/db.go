@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"lambda-func/types"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -10,8 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type DynamoDBClient struct {
-	databaseStore *dynamodb.DynamoDB
+type DBClient struct {
+	dynamoDB *dynamodb.DynamoDB
 }
 
 const (
@@ -19,27 +19,29 @@ const (
 )
 
 // Pointer to singleton instance
-var db *DynamoDBClient
+var db *DBClient
 
-func GetDynamoDBClient() *DynamoDBClient {
+func GetDBClient() *DBClient {
 	dbSession := session.Must(session.NewSession())
 	dynamo := dynamodb.New(dbSession)
 
 	if db == nil {
-		db = &DynamoDBClient{
-			databaseStore: dynamo,
+		db = &DBClient{
+			dynamoDB: dynamo,
 		}
 	}
 
 	return db
 }
 
-func (u *DynamoDBClient) DoesUserExist(username string) (bool, error) {
+func (u *DBClient) DoesUserExist(username string) (bool, error) {
+	username = strings.TrimSpace(username)
+
 	if db == nil {
 		return false, fmt.Errorf("no db client yet")
 	}
 
-	result, err := u.databaseStore.GetItem(&dynamodb.GetItemInput{
+	result, err := u.dynamoDB.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]*dynamodb.AttributeValue{
 			username: {
@@ -62,22 +64,43 @@ func (u *DynamoDBClient) DoesUserExist(username string) (bool, error) {
 	return true, nil
 }
 
-func (u *DynamoDBClient) CreateUser(user *types.RegisterUser) error {
+func (dbClient *DBClient) CreateUser(username, password string) error {
 	if db == nil {
 		return fmt.Errorf("no db client yet")
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	// sanitize
+	trimmedUsername, trimmedPassword := strings.TrimSpace(username), strings.TrimSpace(password)
+
+	// validate inputs
+	if trimmedUsername == "" || len(trimmedUsername) < 3 {
+		return fmt.Errorf("invalid username, at least 3 char long")
+	}
+
+	if trimmedPassword == "" || len(trimmedPassword) < 4 {
+		return fmt.Errorf("invalid password, at least 4 char long")
+	}
+
+	// check if exists already
+	if exist, err := dbClient.DoesUserExist(trimmedUsername); err != nil {
+		return fmt.Errorf("something went wrong")
+	} else if exist {
+		return fmt.Errorf("invalid username")
+	}
+
+	// hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(trimmedPassword), bcrypt.DefaultCost)
 
 	if err != nil {
 		return err
 	}
 
+	// create item
 	item := &dynamodb.PutItemInput{
 		TableName: aws.String(tableName),
 		Item: map[string]*dynamodb.AttributeValue{
 			"username": {
-				S: aws.String(user.Username),
+				S: aws.String(username),
 			},
 			"password": {
 				S: aws.String(string(hashedPassword)),
@@ -85,13 +108,12 @@ func (u *DynamoDBClient) CreateUser(user *types.RegisterUser) error {
 		},
 	}
 
-	_, err = u.databaseStore.PutItem(item)
+	_, err = dbClient.dynamoDB.PutItem(item)
 
-	// err putting
+	// err creating
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
